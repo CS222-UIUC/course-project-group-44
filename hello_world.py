@@ -1,0 +1,1 @@
+print("Mad ting init")
