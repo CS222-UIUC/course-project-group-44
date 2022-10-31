@@ -5,7 +5,7 @@ from time import sleep
 from urllib.request import urlopen
 import requests
 from bs4 import BeautifulSoup
-from const import KEY
+from const import KEY   # pylint: disable=import-error
 
 def get_lyrics(artist, title):
     """
@@ -21,6 +21,8 @@ def get_lyrics(artist, title):
     soup = BeautifulSoup(source, "html.parser")
     for ele in soup.find_all("pre"):
         return ele.get_text()
+
+# get JSON response from Genius API
 
 def _get(base, path, params=None, headers=None):
     """
