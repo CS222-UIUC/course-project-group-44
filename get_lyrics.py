@@ -22,6 +22,8 @@ def get_lyrics(artist, title):
     for ele in soup.find_all("pre"):
         return ele.get_text()
 
+# get JSON response from Genius API
+
 def _get(base, path, params=None, headers=None):
     """
     Get method
