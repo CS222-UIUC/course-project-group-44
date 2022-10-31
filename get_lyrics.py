@@ -5,7 +5,7 @@ from time import sleep
 from urllib.request import urlopen
 import requests
 from bs4 import BeautifulSoup
-from const import KEY   # pylint: disable=import-error-for-const
+from const import KEY   # pylint: disable=invalid-name
 
 def get_lyrics(artist, title):
     """
