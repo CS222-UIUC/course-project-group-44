@@ -26,20 +26,16 @@ def _get(base, path, params=None, headers=None):
     """
     Get method
     """
-    url = base + '/' + path
-    token = "Bearer " + KEY
-    if headers:
-        headers['Authorization'] = token
-    else:
-        headers = {"Authorization": token}
 
-    response = requests.get(url=url, params=params, headers=headers)
+    url = base + '/' + path + "&access_token=" + KEY
+    response = requests.get(url=url, params=params)
     return response.json()
 
 def _get_artist_songs(artist_id):
     """
     Gets songs by an artist with given artist id
     """
+    print(artist_id)
     current_page = 1
     next_page = True
     songs = []
@@ -47,7 +43,7 @@ def _get_artist_songs(artist_id):
         path = "artists/{}/songs/".format(artist_id)
         params = {'page': current_page}
         data = _get("https://api.genius.com", path=path, params=params)
-
+        print(data)
         page_songs = data['response']['songs']
 
         if page_songs:
@@ -72,7 +68,9 @@ def _get_song_titles(song_ids):
     return titles
 
 def _get_artist_id(artist):
-    find_id = _get("search", {'q': artist})
+    path = "search?q="+artist
+    find_id = _get("https://api.genius.com", path)
+    # print(find_id["response"]["hits"])
     for hit in find_id["response"]["hits"]:
         if hit["result"]["primary_artist"]["name"] == artist:
             return hit["result"]["primary_artist"]["id"]
