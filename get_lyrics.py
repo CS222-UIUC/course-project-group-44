@@ -6,6 +6,8 @@ from urllib.request import urlopen
 import requests
 from bs4 import BeautifulSoup
 from const import KEY   # pylint: disable=import-error
+import lyricsgenius
+import re
 
 def get_lyrics(artist, title):
     """
@@ -17,14 +19,20 @@ def get_lyrics(artist, title):
 
     """
     url = "https://www.lyrics.com/lyric/35222023/" + artist + "/" + title
+    # try:
+    url = url.replace(" ", "%20")
+    url = re.sub(r'[^a-zA-Z0-9./:]', "", url)
     source = urlopen(url).read()
     soup = BeautifulSoup(source, "html.parser")
     for ele in soup.find_all("pre"):
         return ele.get_text()
+    # except:
+    #     print("fail")
+    #     return ""
 
 # get JSON response from Genius API
 
-def _get(base, path, params=None, headers=None):
+def _get(base, path, params=None):
     """
     Get method
     """
@@ -37,37 +45,61 @@ def _get_artist_songs(artist_id):
     """
     Gets songs by an artist with given artist id
     """
-    print(artist_id)
-    current_page = 1
-    next_page = True
+
+    genius = lyricsgenius.Genius(KEY)
+    page = 1
     songs = []
-    while next_page:
-        path = "artists/{}/songs/".format(artist_id)
-        params = {'page': current_page}
-        data = _get("https://api.genius.com", path=path, params=params)
-        print(data)
-        page_songs = data['response']['songs']
+    request = genius.artist_songs(artist_id,
+                                sort='popularity',
+                                per_page=50,
+                                page=1)
+    while request["songs"]:
+        for song in request["songs"]:
+            songs.append(song["title"])
+            print(song["title"])
+        page += 1
+        request = genius.artist_songs(artist_id,
+                                sort='popularity',
+                                per_page=50,
+                                page=page)
 
-        if page_songs:
-            songs += page_songs
-            current_page += 1
-        else:
-            next_page = False
 
-    songs = [song["id"] for song in songs
-             if song["primary_artist"]["id"] == artist_id]
+
+    # print(request)
+    
+    # print(page)
+    
+    # request = genius.artist_songs(artist_id,
+    #                             sort='popularity',
+    #                             per_page=50,
+    #                             page=2)
+
+    
+    
+    # print(len(songs))
+    # for song in songs:
+    #     print(song["title"])
+    
+    # request = genius.artist_songs(artist_id,
+    #                             sort='popularity',
+    #                             per_page=50,
+    #                             page=3)
+    # songs.extend(request['songs'])
+    # for song in songs:
+    #     print(song["title"])
+
     return songs
 
-def _get_song_titles(song_ids):
-    """
-    Gets song titles based on song_ids
-    """
-    titles = []
-    for song_id in song_ids:
-        path = "songs/{}".format(song_id)
-        data = _get("https://api.genius.com", path=path)["response"]["song"]
-        titles.append(data["title"])
-    return titles
+# def _get_song_titles(song_ids):
+#     """
+#     Gets song titles based on song_ids
+#     """
+#     titles = []
+#     for song_id in song_ids:
+#         path = "songs/{}".format(song_id)
+#         data = _get("https://api.genius.com", path=path)["response"]["song"]
+#         titles.append(data["title"])
+#     return titles
 
 def _get_artist_id(artist):
     path = "search?q="+artist
@@ -87,11 +119,9 @@ def get_titles(artist):
     artist_id = _get_artist_id(artist)
     print("found")
     print("getting song ids. \n")
-    song_ids = _get_artist_songs(artist_id)
-    print("got song ids")
-    sleep(30)
-    titles = _get_song_titles(song_ids)
-    return titles
+    songs = _get_artist_songs(artist_id)
+    print("got song titles")
+    return songs
 
 def get_song_lyrics(artist):
     """
