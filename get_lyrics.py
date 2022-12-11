@@ -37,7 +37,9 @@ def get_raw_lyrics(artist, title):
     url = lyrics_link
     url = url.replace(" ", "%20")
     url = re.sub(r'[^a-zA-Z0-9./:]', "", url)
-    source = urlopen(url).read()
+    source = None
+    with urlopen(url) as webpage:
+        source = webpage.read()
     soup = BeautifulSoup(source, "html.parser")
     for ele in soup.find_all("pre"):
         if ele.get_text():
