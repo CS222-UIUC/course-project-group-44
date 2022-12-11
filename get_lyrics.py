@@ -28,7 +28,7 @@ def get_raw_lyrics(artist, title):
     l_com_url += "&artist=" + artist.replace("’", "%27").replace(" ", "%20")
     l_com_url += "&format=json"
     print("L_COM_URL: " + l_com_url)
-    l_com_response = requests.get(l_com_url).json()
+    l_com_response = requests.get(l_com_url, timeout=10000).json()
     if l_com_response == {'error': 'Daily Usage Exceeded'}:
         return "FAIL"
     print(l_com_response)
@@ -52,7 +52,7 @@ def _get(base, path, params=None):
     """
 
     url = base + '/' + path + "&access_token=" + KEY
-    response = requests.get(url=url, params=params)
+    response = requests.get(url=url, params=params, timeout=10000)
     return response.json()
 
 def _get_artist_songs(artist_id):
@@ -98,7 +98,7 @@ def get_titles(artist):
     print("getting song ids. \n")
     songs = _get_artist_songs(artist_id)
     print("got song titles")
-    with open("song_titles.txt", "w") as song_file:
+    with open("song_titles.txt", "w", encoding="utf-8") as song_file:
         for song in songs:
             song_file.write(song + "\n")
     return songs
@@ -110,7 +110,7 @@ def get_song_lyrics(artist, index=0):
     """
     titles = []
     if "song_titles.txt" in os.listdir("."):
-        with open("song_titles.txt", "r") as song_file:
+        with open("song_titles.txt", "r", encoding="utf-8") as song_file:
             titles = song_file.readlines()
     else:
         titles = get_titles(artist)
@@ -119,7 +119,7 @@ def get_song_lyrics(artist, index=0):
 
     for title in titles[count:]:
         title_processed = title.replace("/", " ")
-        with open("lyric_files/" + title_processed + ".txt", "w") as lyrics_file:
+        with open("lyric_files/" + title_processed + ".txt", "w", encoding="utf-8") as lyrics_file:
             try:
                 lyrics = get_raw_lyrics(artist, title)
                 if lyrics == "FAIL":
